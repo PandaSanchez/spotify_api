@@ -2,6 +2,8 @@ import requests
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import pandas as pd
+from album_per_top_track import get_album_tracks
+from artist_albums import get_all_artist_albums
 
 
 def credentialize():
@@ -26,6 +28,9 @@ def get_artist_profile(sp):
 
     # Get artist URI/ID details:
     artist_uri = artist_search_results_df['artists']['items'][0]['uri']
+
+    # While we're at it, let's get the data behind all of the artist's albums (discography):
+    get_all_artist_albums(artist_uri)
 
     """TODO: Get Artist Data"""
     # print(artist_search_results_df['artists'])
@@ -57,7 +62,7 @@ def get_artist_profile(sp):
 
     master_artist_profile_df = master_artist_profile_df.append(artist_profile_df, ignore_index=True)
 
-    master_artist_profile_df.to_csv('/Users/richie/Client Engagements - 2019/Epic Seats/SEO Projects/Artist Profiles - Spotify API/artist_profile_test.csv', encoding='utf-8', index=False)
+    # master_artist_profile_df.to_csv('/Users/richie/Client Engagements - 2019/Epic Seats/SEO Projects/Artist Profiles - Spotify API/artist_profile_test.csv', encoding='utf-8', index=False)
 
     print("\n")
     print(master_artist_profile_df)
@@ -124,7 +129,10 @@ def get_artist_top_tracks(artist_uri, sp):
 
     print(top_tracks_master_df)
 
-    top_tracks_master_df.to_csv('/Users/richie/Client Engagements - 2019/Epic Seats/SEO Projects/Artist Profiles - Spotify API/artist_top_tracks_test.csv', encoding='utf-8', index=False)
+    for ind, row in top_tracks_master_df.iterrows():
+        get_album_tracks(row['album_id'], row['track_name'])
+
+    # top_tracks_master_df.to_csv('/Users/richie/Client Engagements - 2019/Epic Seats/SEO Projects/Artist Profiles - Spotify API/artist_top_tracks_test.csv', encoding='utf-8', index=False)
 
 
 def main():
@@ -134,7 +142,7 @@ def main():
         get_artist_top_tracks(artist_uri, tokenized_sp_object)
 
     except Exception as e:
-        print("An artist on your list did not return results from the Spotify API.")
+        print(f"An error occurred: {e}.")
         pass
 
 
